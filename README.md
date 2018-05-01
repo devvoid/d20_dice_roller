@@ -24,7 +24,7 @@ There are three ways of using the bot:
 `$r 2d20` - Rolls two 20-sided dice.
 `$r 2d20+5` - Rolls two 20-sided dice, with a modifier of 5.
 
-Obviously, the numbers can be substituted for any numbers you need. Spaces are completely ignored; `2     d 23` is the exact same as `2d23
+Obviously, the numbers can be substituted for any numbers you need. Spaces are completely ignored; `2     d 23` is the exact same as `2d23`.
 
 ## License
 

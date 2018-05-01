@@ -37,7 +37,7 @@ fn main() {
 					continue
                 }
 
-				if &message.content[0 .. 2] == "%r" {
+				if &message.content[0 .. 2] == "$r" {
                     let dice_str: String;
 
                     if message.content.len() <= 2 {
