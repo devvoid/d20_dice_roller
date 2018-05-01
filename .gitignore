@@ -1,3 +1,5 @@
+*.lock
+*.token
 
 /target/
 **/*.rs.bk
