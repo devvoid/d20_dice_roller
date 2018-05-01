@@ -1,0 +1,9 @@
+[package]
+name = "d20_dice_roller"
+version = "0.1.0"
+authors = ["void <theprismaticvoid@gmail.com>"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+discord = "0.8.0"
+rand = "0.4"
