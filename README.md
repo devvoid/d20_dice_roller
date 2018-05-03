@@ -2,6 +2,10 @@
 A sort of sequel to [my previous Fudge dice roller](https://github.com/devvoid/fudge_dice_roller), created for a friend's DND campaign.
 
 ## Installing
+You can download a premade build of the bot from the [Releases page](https://github.com/devvoid/d20_dice_roller/releases). Just put your bot's token in bot.token and you should be good to go.
+
+If you need to compile it for yourself, you can do it like so:
+
 1. Create a bot user, and get its key. Look up a bot-making tutorial if you have no idea how to do this.
 2. Clone/download this repository.
 3. In the bot's root directory (the same place as Cargo.toml), create a file named "bot.token"
