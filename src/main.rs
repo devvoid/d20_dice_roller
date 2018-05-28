@@ -6,6 +6,12 @@ use discord::model::{Event, Message};
 
 use rand::Rng;
 
+#[derive(PartialEq)]
+enum ModifierState {
+	Plus,
+	Minus
+}
+
 fn main() {
     let discord = Discord::from_bot_token(
         include_str!("../bot.token")
@@ -37,17 +43,26 @@ fn main() {
 					continue
                 }
 
-				if &message.content[0 .. 2] == "$r" {
-                    let dice_str: String;
+				if &message.content[0 .. 1] == "$" {
+                    let command_string : String = message.content[1 .. ].to_string();
 
-                    if message.content.len() <= 2 {
-                        dice_str = "1d20".to_string();
-                    }
-                    else {
-                        dice_str = message.content[3..].replace(" ", "");
-                    }
+                    let mut command_data : Vec<&str> = command_string.split(' ').collect();
 
-                    roll(&discord, &message, &dice_str.as_str());
+
+                    match command_data[0] {
+                        "r" => {
+                            roll(&discord, &mut command_data, &message);
+                        }
+						
+						"roll" => {
+							roll(&discord, &mut command_data, &message);
+						}
+
+                        _ => {
+							println!("Unknown command {}.", command_data[0]);
+							continue
+						}
+                    }
                 }
             }
 
@@ -56,19 +71,25 @@ fn main() {
     }
 }
 
-fn roll(client: &Discord, message: &Message, dice_str: &str) {
+fn roll(client: &Discord, args: &mut Vec<&str>, message: &Message) {
     //Get the thread's RNG.
     //You could probably move this to the generate_number function with no penalty,
     //but I'm not sure if repeatedly getting it from this function would incur overhead.
     let mut rng = rand::thread_rng();
 
-    let mut roll_data: Vec<&str> = dice_str.split("d").collect();
+    let mut roll_data: Vec<&str> = args[1].split("d").collect();
+	
+	let mut modifier_type = ModifierState::Plus;
 
     //This is extremely messy, but it was the only way I could think to get it to work.
     if roll_data.len() >= 2 {
         let mut modifier_data: Vec<&str> = roll_data[1].split("+").collect();
         if modifier_data.len() < 2 {
             modifier_data = roll_data[1].split("-").collect();
+			
+			if modifier_data.len() >= 2 {
+				modifier_type = ModifierState::Minus;
+			}
         }
 
         if modifier_data.len() < 2 {
@@ -138,17 +159,23 @@ fn roll(client: &Discord, message: &Message, dice_str: &str) {
     }
 
     if modifier != 0 {
+		dice_rolls.push(' ');
         dice_rolls.push('(');
 
         if modifier > 0 {
-            dice_rolls.push('+');
+			if modifier_type == ModifierState::Plus {
+				dice_rolls.push('+');
+				total += modifier;
+			} else {
+				dice_rolls.push('-');
+				total -= modifier;
+			}
+            
         }
 
         dice_rolls.push_str(roll_data[2]);
 
         dice_rolls.push(')');
-
-        total += modifier;
     }
 
     dice_rolls.push('`');
