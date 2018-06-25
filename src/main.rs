@@ -18,7 +18,7 @@ enum ModifierState {
 fn log_in() -> Discord {
 	use std::fs::File;
 	use std::io::Read;
-	
+
 	let mut token_file = File::open("./bot.token").expect("bot.token not found!");
     let mut token_string = String::new();
 
@@ -62,12 +62,12 @@ fn main() {
                 if message.author.id == state.user().id {
 					continue
                 }
-				
+
 				if message.content.len() < 1 {
 					continue;
 				}
-				
-				if &message.content[0 .. 1] == "$" {
+
+				if &message.content.as_str().chars().next() == Some("$") {
                     let command_string : String = message.content[1 .. ].to_string();
 
                     let mut command_data : Vec<&str> = command_string.split(' ').collect();
@@ -77,7 +77,7 @@ fn main() {
                         "r" => {
                             roll(&discord, &mut command_data, &message);
                         }
-						
+
 						"roll" => {
 							roll(&discord, &mut command_data, &message);
 						}
@@ -102,7 +102,7 @@ fn roll(client: &Discord, args: &mut Vec<&str>, message: &Message) {
     let mut rng = rand::thread_rng();
 
     let mut roll_data: Vec<&str> = args[1].split("d").collect();
-	
+
 	let mut modifier_type = ModifierState::Plus;
 
     //This is extremely messy, but it was the only way I could think to get it to work.
@@ -110,7 +110,7 @@ fn roll(client: &Discord, args: &mut Vec<&str>, message: &Message) {
         let mut modifier_data: Vec<&str> = roll_data[1].split("+").collect();
         if modifier_data.len() < 2 {
             modifier_data = roll_data[1].split("-").collect();
-			
+
 			if modifier_data.len() >= 2 {
 				modifier_type = ModifierState::Minus;
 			}
@@ -194,7 +194,7 @@ fn roll(client: &Discord, args: &mut Vec<&str>, message: &Message) {
 				dice_rolls.push('-');
 				total -= modifier;
 			}
-            
+
         }
 
         dice_rolls.push_str(roll_data[2]);
