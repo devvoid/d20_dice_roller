@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 extern crate discord;
 extern crate rand;
 
@@ -12,10 +14,28 @@ enum ModifierState {
 	Minus
 }
 
-fn main() {
-    let discord = Discord::from_bot_token(
+#[cfg(feature = "externaltoken")]
+fn log_in() -> Discord {
+	use std::fs::File;
+	use std::io::Read;
+	
+	let mut token_file = File::open("./bot.token").expect("bot.token not found!");
+    let mut token_string = String::new();
+
+    token_file.read_to_string(&mut token_string).expect("Failed to read token from bot.token.");
+
+	Discord::from_bot_token(&token_string[..]).expect("Failed to login with provided token.")
+}
+
+#[cfg(not(feature = "externaltoken"))]
+fn log_in() -> Discord {
+	Discord::from_bot_token(
         include_str!("../bot.token")
-    ).expect("Failed to login with provided token.");
+    ).expect("Failed to login with provided token.")
+}
+
+fn main() {
+    let discord = log_in();
 
     let (mut connection, ready) = discord.connect().expect("Failed to connect.");
 
@@ -42,7 +62,11 @@ fn main() {
                 if message.author.id == state.user().id {
 					continue
                 }
-
+				
+				if message.content.len() < 1 {
+					continue;
+				}
+				
 				if &message.content[0 .. 1] == "$" {
                     let command_string : String = message.content[1 .. ].to_string();
 
