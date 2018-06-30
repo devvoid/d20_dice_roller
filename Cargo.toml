@@ -1,14 +1,17 @@
 [package]
 name = "d20_dice_roller"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["void <theprismaticvoid@gmail.com>"]
 license = "MIT/Apache-2.0"
 
 [features]
 default = []
 
-externaltoken = []
+external_token = []
+
+[profile.release]
+lto = true
 
 [dependencies]
-discord = "0.8.0"
+serenity = "0.5.4"
 rand = "0.4"
