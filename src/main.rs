@@ -58,11 +58,6 @@ fn roll(message: &String) -> String {
 		return String::from("Failed to roll: Message is not ASCII");
 	}
 	
-    //Get the thread's RNG
-    //You could probably move this to the generate_number function with no penalty,
-    //but I'm not sure if repeatedly getting it from this function would incur overhead
-    let mut rng = rand::thread_rng();
-	
 	//This will be filled with three i32s. In order, these i32s are: the number of dice to roll, the number of faces, and the modifier
 	let args: Vec<i32>;
 	
@@ -99,7 +94,7 @@ fn roll(message: &String) -> String {
 	let mut total: i32 = 0;
 
     for i in 0 .. args[0] {
-		let generated_number = generate_number(&mut rng, args[1]);
+		let generated_number = generate_number(args[1]);
 		total += generated_number;
 		
 		let converted_number = generated_number.to_string();
@@ -200,7 +195,10 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
 	parsed_args
 }
 
-fn generate_number(rng: &mut rand::ThreadRng, max: i32) -> i32 {
+fn generate_number(max: i32) -> i32 {
+	//Get the thread's RNG
+    let mut rng = rand::thread_rng();
+
     //max has to be increased by one, because rand never seems to generate the highest possible number given
     let result: i32 = rng.gen_range::<i32>(1, max + 1);
 
