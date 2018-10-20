@@ -33,7 +33,7 @@ fn log_in() -> Client {
 }
 
 fn main() {
-    // Login with a bot token from the environment
+    //Log in
     let mut client = log_in();
 
     client.with_framework(StandardFramework::new()
@@ -52,7 +52,8 @@ command!(roll_command(_context, message) {
 });
 
 fn roll(message: &String) -> String {
-	//Stop if message[3] isn't an ASCII string
+	//Stop if the message isn't an ASCII string
+	//This is because I haven't found an easy way to slice a Unicode string
 	if !message.is_ascii() {
 		return String::from("Failed to roll: Message is not ASCII");
 	}
@@ -66,12 +67,12 @@ fn roll(message: &String) -> String {
 	let args: Vec<i32>;
 	
 	//Find the first space in the string. If there's not, that means the function was called with no arguments, meaning it should use the default roll of 1d20+0
-	//If it finds a space, convert to lowercase, strip all spaces, and go to the parse_args function to convert it into a Vec<i32>.
 	let first_space_location = message.find(' ').unwrap_or(0);
 	
 	if first_space_location == 0 {
 		args = vec!(1, 20, 0);
 	} else {
+		//If it finds a space, convert to lowercase, strip all spaces, and go to the parse_args function to convert it into a Vec<i32>.
 		let unparsed_args = message.split_at(message.find(' ').unwrap_or(0)).1
 			.to_ascii_lowercase()
 			.replace(" ", "");
@@ -114,8 +115,6 @@ fn roll(message: &String) -> String {
 
         if args[2] > 0 {
 			roll_results.push('+');
-		} else {
-			roll_results.push('-');
 		}
 			
 		total += args[2];
@@ -139,16 +138,21 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
 	
 	let mut parsed_args: Vec<i32> = Vec::new();
 
-    //This is extremely messy, but it was the only way I could think to get it to work.
+	let mut is_modifier_negative = false;
+
+    //This is extremely messy, but it was the only way I could think to get it to work
     if roll_data.len() >= 2 {
-		//Attempt to split on the +. if that fails, split on the -.
+		//Attempt to split on the +
         let mut modifier_data: Vec<&str> = roll_data[1].split("+").collect();
 		
+		//if that fails, split on the -
         if modifier_data.len() < 2 {
             modifier_data = roll_data[1].split("-").collect();
+			//Mark it as negative as well
+			is_modifier_negative = true;
         }
 		
-		//If both splits fail to find anything, set the modifier to 0. Otherwise, set it to whatever was after the + or -.
+		//If both splits fail to find anything, set the modifier to 0. Otherwise, set it to whatever was after the + or -
         if modifier_data.len() < 2 {
             roll_data.push("0");
         } else {
@@ -157,8 +161,8 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
         }
     }
 	
-	//Parse all the strings into their i32 counterparts.
-	//TODO: Replace all of this with unwrap_or, and find a way to make the bot say an error message if it's using a default variable.
+	//Parse all the strings into their i32 counterparts
+	//TODO: Replace all of this with unwrap_or, and find a way to make the bot say an error message if it's using a default variable
     match roll_data.len() {
         1 => {
 			parsed_args.push(1);
@@ -175,11 +179,19 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
         3 => {
             parsed_args.push(roll_data[0].parse::<i32>().unwrap());
 			parsed_args.push(roll_data[1].parse::<i32>().unwrap());
-			parsed_args.push(roll_data[2].parse::<i32>().unwrap());
+
+			let modifier = roll_data[2].parse::<i32>().unwrap();
+
+			//If the modifier is negative, convert the i32 to negative
+			if is_modifier_negative {
+				parsed_args.push(modifier - (2 * modifier));
+			} else {
+				parsed_args.push(modifier);
+			}
         }
 
         _ => {
-			//This shouldn't be possible, but just in case, panic.
+			//This shouldn't be possible, but just in case, panic
             panic!("roll_data.len() is outside of expected range");
         }
     }
@@ -188,12 +200,10 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
 }
 
 fn generate_number(rng: &mut rand::ThreadRng, max: i32) -> i32 {
-    //max has to be increased by one, because rand never seems to generate the highest possible number given.
-    //So if it's set to 1 and 3, it's always a 1 or 2 it generates.
+    //max has to be increased by one, because rand never seems to generate the highest possible number given
     let result: i32 = rng.gen_range::<i32>(1, max + 1);
 
-    //For the reasons listed above, this should never happen, but if a future version of the rand crate changes the behavior,
-    //this would let me know ahead of time.
+    //Panic if that happens though
     if result >= (max + 1) {
         panic!("Function returned a number too high!");
     }
