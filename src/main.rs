@@ -58,12 +58,12 @@ fn roll(message: &String) -> String {
 		return String::from("Failed to roll: Message is not ASCII");
 	}
 	
-    //Get the thread's RNG.
+    //Get the thread's RNG
     //You could probably move this to the generate_number function with no penalty,
-    //but I'm not sure if repeatedly getting it from this function would incur overhead.
+    //but I'm not sure if repeatedly getting it from this function would incur overhead
     let mut rng = rand::thread_rng();
 	
-	//This will be filled with three i32s. In order, these i32s are: the number of dice to roll, the number of faces, and the modifier.
+	//This will be filled with three i32s. In order, these i32s are: the number of dice to roll, the number of faces, and the modifier
 	let args: Vec<i32>;
 	
 	//Find the first space in the string. If there's not, that means the function was called with no arguments, meaning it should use the default roll of 1d20+0
@@ -72,7 +72,7 @@ fn roll(message: &String) -> String {
 	if first_space_location == 0 {
 		args = vec!(1, 20, 0);
 	} else {
-		//If it finds a space, convert to lowercase, strip all spaces, and go to the parse_args function to convert it into a Vec<i32>.
+		//If it finds a space, convert to lowercase, strip all spaces, and go to the parse_args function to convert it into a Vec<i32>
 		let unparsed_args = message.split_at(message.find(' ').unwrap_or(0)).1
 			.to_ascii_lowercase()
 			.replace(" ", "");
@@ -80,21 +80,22 @@ fn roll(message: &String) -> String {
 		args = parse_args(unparsed_args);
 	}
 	
-	//If either the number of dice, or the number of faces on the dice, are negative, bail out early.
+	//If either the number of dice is negative, bail out early
 	if args[0] < 1 {
 		return String::from("Failed to roll: Number of dice is negative");
 	}
 	
+	//Do the same with the number of faces
 	if args[1] < 1 {
 		return String::from("Failed to roll: Number of faces is negative");
 	}
 
-    //Fill the vector with dice rolls.
+    //Fill the vector with dice rolls
     let mut roll_results = String::new();
 	
 	roll_results.push('`');
 	
-	//The final total of numbers that will be displayed at the end of the function.
+	//The final total of numbers that will be displayed at the end of the function
 	let mut total: i32 = 0;
 
     for i in 0 .. args[0] {
@@ -127,7 +128,7 @@ fn roll(message: &String) -> String {
 
     roll_results.push('`');
 
-    //Combine roll_results and total together to form one message.
+    //Combine roll_results and total together to form one message
     format!("{}. Total: {}", roll_results.as_str(), total)
 }
 
