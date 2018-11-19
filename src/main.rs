@@ -39,7 +39,9 @@ fn main() {
     client.with_framework(StandardFramework::new()
         .configure(|c| c.prefix("$"))
 		.cmd("roll", roll_command)
-		.cmd("r", roll_command));
+		.cmd("r", roll_command)
+		.cmd("fudge", roll_fudge_command)
+		.cmd("f", roll_fudge_command));
 
     if let Err(why) = client.start() {
         println!("An error occurred while running the client: {:?}", why);
@@ -48,6 +50,11 @@ fn main() {
 
 command!(roll_command(_context, message) {
 	let response = roll(&message.content);
+	message.reply(&response[..]).expect("failed to send message");
+});
+
+command!(roll_fudge_command(_context, message) {
+	let response = roll_fudge(&message.content);
 	message.reply(&response[..]).expect("failed to send message");
 });
 
@@ -193,6 +200,64 @@ fn parse_args(unparsed_args: String) -> Vec<i32> {
     }
 	
 	parsed_args
+}
+
+fn roll_fudge(message: &String) -> String {
+	if !message.is_ascii() {
+		return String::from("Failed to roll: Message is not ASCII");
+	}
+
+	let number_of_dice = match message.len() {
+        //If the command is just "%r" with no arguments (Discord removes trailing spaces), roll 4 dice,
+        //since that's the most common number of dice to roll in Fate.
+        2 => 4,
+        _ => {
+            //Get the rest of the message, post-%r, as a slice.
+            //If that slice is a valid u32, use that as the number of dice.
+            //Else, use 4.
+            message.as_str()[3..].parse::<i32>().unwrap_or(4)
+        }
+	};
+
+	//Fill the vector with dice rolls.
+    let mut roll_results = Vec::new();
+
+    for _i in 0 .. number_of_dice {
+		let mut rng = rand::thread_rng();
+
+        roll_results.push(rng.gen_range::<i32>(1, 4) - 2);
+	}
+
+	//total is the number that will be printed, showing all the dice added together.
+    let mut total: i32 = 0;
+
+    //dice_rolls is the visual display, showing the results of each individual die.
+    let mut dice_rolls = String::new();
+
+	dice_rolls.push('`');
+
+	for i in roll_results.iter() {
+        match i {
+            &-1 => {
+                total -= 1;
+                dice_rolls.push('-');
+            },
+            &0 => {
+                dice_rolls.push(' ')
+            },
+            &1 => {
+                total += 1;
+                dice_rolls.push('+');
+            },
+            _ => {
+				panic!("invalid roll result generated!");
+			}
+        }
+	}
+
+	dice_rolls.push('`');
+
+	format!("{}. Total: {}", dice_rolls.as_str(), total)
 }
 
 fn generate_number(max: i32) -> i32 {
