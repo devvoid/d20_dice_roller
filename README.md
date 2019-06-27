@@ -1,5 +1,8 @@
 # D20 Dice Roller
-A sort of sequel to [my previous Fudge dice roller](https://github.com/devvoid/fudge_dice_roller), created for a friend's DND campaign.
+
+**As of 2019, this repo is abandoned; use [the updated version on Gitlab](https://gitlab.com/devvoid/dicemaster) instead.**
+
+A sort of sequel to my previous Fudge dice roller, created for a friend's DND campaign.
 
 ## Installing
 You can download a premade build of the bot from the [Releases page](https://github.com/devvoid/d20_dice_roller/releases). Just put your bot's token in bot.token and you should be good to go.
